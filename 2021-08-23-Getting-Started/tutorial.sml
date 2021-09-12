@@ -332,6 +332,14 @@ accept the functions in uncurried form. Have a look at their types.
 
 *)
 
+(*
+  val foldr = fn : ('a * 'b -> 'b) -> 'b -> 'a list -> 'b
+  val foldl = fn : ('a * 'b -> 'b) -> 'b -> 'a list -> 'b
+*)
+
+fun foldr _ x []      = x
+  | foldr f x (y::ys) = f y (foldr f x ys);
+
 
 
 (*  Parameteric Polymorphism.
