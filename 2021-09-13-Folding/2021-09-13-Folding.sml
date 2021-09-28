@@ -230,7 +230,7 @@ fun nth (x, y) = case (nthAux (x, y)) of
    Try writing `nthAux : 'a list * int -> 'a Find`
 *)
 
-
+(* =============================================================================================== *)
 (*
 # Bonus question (ungraded)
 
@@ -241,3 +241,104 @@ s = sfun (x, s)`. Notice that `foldr sfun s0 [x0,...,xn] = (trₓ₀ o
 trₓ₁ .... o trₓₙ) s0`. Now it is sufficient to compute the composition
 of this function which can be done using a `foldl`
 *)
+
+(* ------------------------------------------------------------------------------------------------- *)
+
+(*  Idea building
+
+foldl ⊗ s0 [x₁,......, xₙ] =   ((s0 ⊗ x₁) ⊗ x₂ ...... ⊗ xₙ)
+
+For each x : 'a consider trₓ : 'summary -> 'summary, trₓ s = s ⊗ x
+
+So { trₓ : x ∈ 'a } gives a family of functions.
+
+foldl ⊗ s0 [ x₁,....,xₙ] =      trₓₙ ... trₓ₂ (trₓ₁ s0)
+                         =     (trₓₙ o ... o trₓ₁) s0
+
+       [x₁,....,xₙ] -> [trₓ₁,....,trₓₙ]   map (fn x => fn s => sfun (x, s) )
+
+sfun' (t, old) = old o t
+foldr sfun' [trₓ₁, ..., trₓₙ]
+
+Initial summary will be identity function
+
+               id
+              [tr₁]           =  tr₁ o id = tr₁
+              [tr₁, tr₂]      =  tr₂ o tr₁
+              [tr₁, tr₂, tr₃] =  tr₃ o tr₂ o tr₁
+
+              old = trₙ o ... o trₙ₋ᵢ
+*)
+
+(* val foldl = fn : ('a * 'b -> 'b) -> 'b -> 'a list -> 'b *)
+fun foldl sfun s0 xs = let
+                            fun sfun' (t, old) = old o t
+                            fun tr x = fn s => sfun (x, s)
+                            val transform = map tr
+                       in
+                            (foldr sfun' (fn x => x) (transform xs)) s0 
+                       end;
+
+(* Other way to write, takes list first and then the initial summary *)
+(* val foldl = fn : ('a * 'b -> 'b) -> 'a list -> 'b -> 'b *)
+(*
+fun foldl sfun = let
+                    fun sfun' (t, old) = old o t
+                    fun tr x = fn s => sfun (x, s)
+                    val transform = map tr
+                 in
+                    foldr sfun' (fn x => x) o transform
+                 end;
+*)
+
+(* val foo = foldl (op ::) [] [1, 2, 3] (* Testing *) *)
+
+(* ------------------------------------------------------------------------------------------------- *)
+
+(* ------------------------------------------------------------------------------------------------- *)
+
+(*  Idea building
+
+foldl ⊗ s0 [x₁,......, xₙ] =   ((s0 ⊗ x₁) ⊗ x₂ ...... ⊗ xₙ)
+foldr ⛒ [x₁, ... xₙ] s0 = x₁ ⛒ (... xₙ₋₁ ⊗ (xₙ ⛒ s0))
+
+For each x : 'a consider trₓ : 'summary -> 'summary, trₓ s = x ⊗ s
+
+So { trₓ : x ∈ 'a } gives a family of functions.
+
+foldl ⊗ s0 [ x₁,....,xₙ] =      trₓₙ ... trₓ₂ (trₓ₁ s0)
+                         =     (trₓₙ o ... o trₓ₁) s0
+
+foldr ⊗ s0 [ x₁,....,xₙ] =      trₓ₁ ... trₓ₂ (trₓₙ s0)
+                         =     (trₓ₁ o ... o trₓₙ) s0
+
+       [x₁,....,xₙ] -> [trₓ₁,....,trₓₙ]   map (fn x => fn s => sfun (x, s) )
+
+sfun' (t, old) = old o t
+foldl sfun' [trₓ₁, ..., trₓₙ]
+
+Initial summary will be identity function
+*)
+
+(* val foldr = fn : ('a * 'b -> 'b) -> 'b -> 'a list -> 'b *)
+fun foldr sfun s0 xs =  let
+                            fun sfun' (t, old) = old o t
+                            fun tr x = fn s => sfun (x, s)
+                            val transform = map tr
+                        in
+                            (foldl sfun' (fn x => x) (transform xs)) s0
+                        end;
+
+(* Other way to write, takes list first and then the initial summary *)
+(* val foldr = fn : ('a * 'b -> 'b) -> 'a list -> 'b -> 'b *)
+(*
+fun foldr sfun = let
+                    fun sfun' (t, old) = old o t
+                    fun tr x = fn s => sfun (x, s)
+                    val transform = map tr
+                 in
+                    foldl sfun' (fn x => x) o transform
+                 end;
+*)
+(* ------------------------------------------------------------------------------------------------- *)
+(* =============================================================================================== *)
